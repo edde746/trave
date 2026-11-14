@@ -8,17 +8,9 @@ It works on unpacked bytes: decompress a gzip or zstd file before reading it, an
 
 ## Depending on it
 
-It isn't published to any registry. Take it from git, for example as a submodule, and include it as a composite
-build:
-
-```sh
-git submodule add https://github.com/edde746/trave.git trave
-```
+On Maven Central as `dev.edde746:trave`:
 
 ```kotlin
-// settings.gradle.kts
-includeBuild("trave/kotlin")
-
 // build.gradle.kts
 kotlin {
     sourceSets {
@@ -28,9 +20,6 @@ kotlin {
     }
 }
 ```
-
-Gradle builds the library from the included sources in place of the coordinates. Alternatively, run
-`./gradlew publishToMavenLocal` in this directory and add `mavenLocal()` to your repositories.
 
 ## API
 

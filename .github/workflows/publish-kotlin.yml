@@ -1,0 +1,40 @@
+name: publish-kotlin
+
+# Publishes kotlin/ to Maven Central (dev.edde746:trave) when a tag kotlin/v<version> is pushed: uploaded, signed and
+# released, waiting until Central has published it. The tag's version must be build.gradle.kts's.
+on:
+  push:
+    tags:
+      - "kotlin/v[0-9]+.[0-9]+.[0-9]+*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    # macOS: the Apple targets' artifacts are only built there.
+    runs-on: macos-15
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: kotlin
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-read-only: true
+      - name: Check the tag against build.gradle.kts
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' build.gradle.kts)
+          [[ "kotlin/v$version" == "$GITHUB_REF_NAME" ]] || { echo "tag $GITHUB_REF_NAME, build.gradle.kts $version"; exit 1; }
+      - run: ./gradlew allTests
+      - run: ./gradlew publishToMavenCentral --no-configuration-cache
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}

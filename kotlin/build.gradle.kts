@@ -1,12 +1,51 @@
+import com.vanniktech.maven.publish.DeploymentValidation
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform") version "2.4.10"
-    `maven-publish`
+    id("com.vanniktech.maven.publish") version "0.37.0"
 }
 
 group = "dev.edde746"
 version = "1.0.0"
+
+// Maven Central: `./gradlew publishToMavenCentral` uploads, signs and releases, with the credentials and the signing
+// key in ORG_GRADLE_PROJECT_mavenCentralUsername, ..._mavenCentralPassword, ..._signingInMemoryKey and
+// ..._signingInMemoryKeyPassword (the publish-kotlin workflow sets them from the repository's secrets).
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true, validateDeployment = DeploymentValidation.PUBLISHED)
+    // Central needs every file signed; without a key (publishToMavenLocal, a local build) nothing is.
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
+    coordinates("dev.edde746", "trave", version.toString())
+    pom {
+        name = "trave"
+        description = "Reader and writer of Trave files: tables of named, typed columns packed for an app to read " +
+            "with nothing but a gzip or zstd decoder."
+        url = "https://github.com/edde746/trave"
+        inceptionYear = "2026"
+        licenses {
+            license {
+                name = "MIT"
+                url = "https://opensource.org/license/mit"
+                distribution = "repo"
+            }
+        }
+        developers {
+            developer {
+                id = "edde746"
+                name = "edde746"
+                url = "https://github.com/edde746"
+            }
+        }
+        scm {
+            url = "https://github.com/edde746/trave"
+            connection = "scm:git:https://github.com/edde746/trave.git"
+            developerConnection = "scm:git:ssh://git@github.com/edde746/trave.git"
+        }
+    }
+}
 
 /** Writes `../vectors.json` into a Kotlin source file, as common test code can't read files on native targets. */
 abstract class EmbedVectors : DefaultTask() {

@@ -6,10 +6,8 @@ for byte with the reference implementation, [`trave.py`](../python/trave.py), an
 
 ## Getting it
 
-The module is not published to any registry or tagged yet. Depend on it from git, at a commit of the `main` branch:
-
 ```sh
-go get github.com/edde746/trave/go@main
+go get github.com/edde746/trave/go
 ```
 
 ```go

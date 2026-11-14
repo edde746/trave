@@ -89,12 +89,17 @@ types, and add columns rather than change one.
 
 Each reads and writes the format and passes every [test vector](#test-vectors).
 
-| Language | Directory | Depend on it |
-|---|---|---|
-| Python 3.9+ | [`python/`](python) | `pip install "trave @ git+https://github.com/edde746/trave#subdirectory=python"`, or copy `trave.py`: one module, standard library only |
-| Go 1.23+ | [`go/`](go) | `go get github.com/edde746/trave/go` |
-| Kotlin Multiplatform (JVM and Android, iOS, macOS, tvOS) | [`kotlin/`](kotlin) | a Gradle included build of `kotlin/`; see its README |
-| Dart 3.5+ (native, not web) | [`dart/`](dart) | `dart pub add trave` |
+| Language | Directory | Registry | Depend on it |
+|---|---|---|---|
+| Python 3.9+ | [`python/`](python) | [PyPI](https://pypi.org/project/trave/) | `pip install trave`, or copy `trave.py`: one module, standard library only |
+| Go 1.23+ | [`go/`](go) | [pkg.go.dev](https://pkg.go.dev/github.com/edde746/trave/go) | `go get github.com/edde746/trave/go` |
+| Kotlin Multiplatform (JVM and Android, iOS, macOS, tvOS) | [`kotlin/`](kotlin) | [Maven Central](https://central.sonatype.com/artifact/dev.edde746/trave) | `implementation("dev.edde746:trave:1.0.0")` |
+| Dart 3.5+ (native, not web) | [`dart/`](dart) | [pub.dev](https://pub.dev/packages/trave) | `dart pub add trave` |
+
+Each library is versioned and released on its own, by pushing a tag `<directory>/v<version>` (`python/v1.0.1`,
+`kotlin/v1.1.0`, ...) after setting that version in its `pyproject.toml`, `build.gradle.kts` or `pubspec.yaml` (Go's
+is the tag alone). The `publish-*` workflows check that the two agree and publish; the major version follows the
+format's.
 
 The Python library decodes a whole file at once and handles gzip and zstd itself. The others are for apps: they
 take the unpacked bytes (the app decompresses), check the file's layout, and decode a column only when asked, into
