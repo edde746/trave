@@ -1,0 +1,81 @@
+{
+  "magic": "TEST",
+  "vectors": [
+    {
+      "name": "empty",
+      "description": "no tables",
+      "hex": "54455354 01 00",
+      "canonical": true,
+      "tables": []
+    },
+    {
+      "name": "all_types",
+      "description": "every type, with absent values, empty strings and lists, a delta over an absent value, a two-byte varint",
+      "hex": "54455354 01 01 0174 03 06 0169 01 03 010200 0164 02 03 150006 0173 03 05 0100 03c3a9 016b 04 08 02016201610102 01 016c 05 07 01000402 03d804 016d 06 06 000301780001",
+      "canonical": true,
+      "tables": [
+        {"name": "t", "rows": 3, "columns": [
+          {"name": "i", "type": "int", "values": [0, -1, null]},
+          {"name": "d", "type": "int_delta", "values": [10, null, 7]},
+          {"name": "s", "type": "str", "values": ["", null, "é"]},
+          {"name": "k", "type": "dict", "values": ["b", "a", "b"]},
+          {"name": "l", "type": "int_list", "values": [[], null, [1, -2, 300]]},
+          {"name": "m", "type": "str_list", "values": [null, ["x", ""], []]}
+        ]}
+      ]
+    },
+    {
+      "name": "empty_tables",
+      "description": "a table of no rows and a table of no columns",
+      "hex": "54455354 01 02 0165 00 01 017a 03 00 0166 05 00",
+      "canonical": true,
+      "tables": [
+        {"name": "e", "rows": 0, "columns": [{"name": "z", "type": "str", "values": []}]},
+        {"name": "f", "rows": 5, "columns": []}
+      ]
+    },
+    {
+      "name": "int64_bounds",
+      "description": "the largest tags: int and int_delta from -(2^63 - 1) to 2^63 - 1, list items from -2^63",
+      "hex": "54455354 01 01 0174 02 03 0169 01 14 feffffffffffffffff01 ffffffffffffffffff01 0164 02 14 ffffffffffffffffff01 feffffffffffffffff01 016c 05 16 03 ffffffffffffffffff01 feffffffffffffffff01 00",
+      "canonical": true,
+      "tables": [
+        {"name": "t", "rows": 2, "columns": [
+          {"name": "i", "type": "int", "values": [-9223372036854775807, 9223372036854775807]},
+          {"name": "d", "type": "int_delta", "values": [9223372036854775807, 0]},
+          {"name": "l", "type": "int_list", "values": [[-9223372036854775808, 9223372036854775807], null]}
+        ]}
+      ]
+    },
+    {
+      "name": "unknown_types",
+      "description": "columns of type 0 and 9 are skipped by their length, whatever their bytes",
+      "hex": "54455354 01 01 0174 02 03 0177 00 00 0178 09 03 ffffff 0179 01 02 0305",
+      "canonical": false,
+      "tables": [
+        {"name": "t", "rows": 2, "columns": [{"name": "y", "type": "int", "values": [1, 2]}]}
+      ]
+    },
+    {
+      "name": "dict_unused",
+      "description": "a dictionary string no row uses",
+      "hex": "54455354 01 01 0174 01 01 016b 04 06 02 0161 0162 02",
+      "canonical": false,
+      "tables": [
+        {"name": "t", "rows": 1, "columns": [{"name": "k", "type": "dict", "values": ["b"]}]}
+      ]
+    },
+    {"name": "wrong_version", "hex": "54455354 02 00", "error": "version 2"},
+    {"name": "truncated", "hex": "54455354 01 01 0174", "error": "ends inside a table header"},
+    {"name": "trailing_bytes", "hex": "54455354 01 00 ff", "error": "a byte after the last table"},
+    {"name": "column_bytes_left", "hex": "54455354 01 01 0174 01 01 0169 01 02 0101", "error": "a column longer than its values"},
+    {"name": "column_cut_short", "hex": "54455354 01 01 0174 02 01 0169 01 01 01", "error": "a column shorter than its values"},
+    {"name": "column_past_end", "hex": "54455354 01 01 0174 01 01 0169 01 05 01", "error": "a column longer than the file"},
+    {"name": "dict_index_out_of_range", "hex": "54455354 01 01 0174 01 01 016b 04 04 01 0161 02", "error": "dictionary string 1 of 1"},
+    {"name": "invalid_utf8", "hex": "54455354 01 01 0174 01 01 0173 03 02 02 ff", "error": "a string that is not UTF-8"},
+    {"name": "int64_min", "hex": "54455354 01 01 0174 01 01 0169 01 0a 808080808080808080 02", "error": "an int tag of 2^64 (the value -2^63)"},
+    {"name": "varint_over_10_bytes", "hex": "54455354 01 01 0174 01 01 0169 01 0b 80808080808080808080 00", "error": "an 11-byte varint"},
+    {"name": "duplicate_column", "hex": "54455354 01 01 0174 01 02 0169 01 01 01 0169 01 01 01", "error": "two columns named i"},
+    {"name": "duplicate_table", "hex": "54455354 01 02 0174 00 00 0174 00 00", "error": "two tables named t"}
+  ]
+}
