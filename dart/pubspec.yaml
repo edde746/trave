@@ -3,8 +3,12 @@ description: >-
   Reader and writer of Trave files: tables of named, typed columns packed for an app to read with nothing but a
   gzip or zstd decoder. Native platforms only.
 version: 1.0.0
-repository: https://github.com/edde746/trave
-publish_to: none
+repository: https://github.com/edde746/trave/tree/main/dart
+issue_tracker: https://github.com/edde746/trave/issues
+topics:
+  - file-format
+  - binary
+  - serialization
 
 environment:
   sdk: ^3.5.0

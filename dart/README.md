@@ -11,17 +11,9 @@ The package takes and gives **unpacked** bytes: decompress a gzip or zstd file f
 
 ## Depending on it
 
-The package is not published to pub.dev; depend on it from git:
-
-```yaml
-dependencies:
-  trave:
-    git:
-      url: https://github.com/edde746/trave.git
-      path: dart
+```sh
+dart pub add trave
 ```
-
-Add `ref:` with a commit or tag to pin a version.
 
 ## API
 

@@ -87,15 +87,14 @@ types, and add columns rather than change one.
 
 ## Libraries
 
-Each reads and writes the format and passes every [test vector](#test-vectors). They are not on a package registry
-yet; depend on them from this repository.
+Each reads and writes the format and passes every [test vector](#test-vectors).
 
 | Language | Directory | Depend on it |
 |---|---|---|
 | Python 3.9+ | [`python/`](python) | `pip install "trave @ git+https://github.com/edde746/trave#subdirectory=python"`, or copy `trave.py`: one module, standard library only |
 | Go 1.23+ | [`go/`](go) | `go get github.com/edde746/trave/go` |
 | Kotlin Multiplatform (JVM and Android, iOS, macOS, tvOS) | [`kotlin/`](kotlin) | a Gradle included build of `kotlin/`; see its README |
-| Dart 3.5+ (native, not web) | [`dart/`](dart) | a git dependency with `path: dart`; see its README |
+| Dart 3.5+ (native, not web) | [`dart/`](dart) | `dart pub add trave` |
 
 The Python library decodes a whole file at once and handles gzip and zstd itself. The others are for apps: they
 take the unpacked bytes (the app decompresses), check the file's layout, and decode a column only when asked, into
