@@ -3,11 +3,11 @@ import sys
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+PYTHON = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PYTHON))
 import trave  # noqa: E402
 
-VECTORS = json.loads((ROOT / "vectors.json").read_text(encoding="utf-8"))
+VECTORS = json.loads((PYTHON.parent / "vectors.json").read_text(encoding="utf-8"))
 MAGIC = VECTORS["magic"].encode("ascii")
 TYPES = {name: kind for kind, name in trave.TYPE_NAMES.items()}
 
@@ -68,6 +68,7 @@ class Errors(unittest.TestCase):
         cases = {
             "int -2^63": [("t", 1, [("i", trave.INT, [-(1 << 63)])])],
             "delta over 2^63 - 1": [("t", 2, [("d", trave.INT_DELTA, [-1, (1 << 63) - 1])])],
+            "int_delta value -2^63": [("t", 2, [("d", trave.INT_DELTA, [-1, -(1 << 63)])])],
             "list item 2^63": [("t", 1, [("l", trave.INT_LIST, [[1 << 63]])])],
             "values for another row count": [("t", 2, [("i", trave.INT, [1])])],
             "two columns of one name": [("t", 0, [("i", trave.INT, []), ("i", trave.STR, [])])],

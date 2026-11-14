@@ -13,8 +13,8 @@ A *trave* (Swedish) is a stack of split logs, laid in neat rows.
   New columns and tables can be added without breaking old readers.
 - The same tables always give the same bytes.
 
-This repository has [the format](#the-format), the reference writer and reader ([`trave.py`](trave.py)), and
-[test vectors](#test-vectors) for readers in other languages.
+This repository has [the format](#the-format), [libraries](#libraries) for Python, Go, Kotlin Multiplatform and
+Dart, and [test vectors](#test-vectors) that every library, and any other reader, checks itself against.
 
 ## Files using it
 
@@ -63,8 +63,9 @@ Nothing follows the last table.
 | 5 | `int_list` | `t - 1` items follow, each a signed varint |
 | 6 | `str_list` | `t - 1` items follow, each a string |
 
-Every number is a signed 64-bit integer. An `int` value, and an `int_delta` difference, is between `-(2^63 - 1)` and
-`2^63 - 1`, so that its tag (zigzag plus one) fits in an unsigned 64-bit integer; `-2^63` can only be a list item.
+Every number is a signed 64-bit integer. An `int` or `int_delta` value, and an `int_delta` difference, is between
+`-(2^63 - 1)` and `2^63 - 1`, so that its tag (zigzag plus one) fits in an unsigned 64-bit integer; `-2^63` can only
+be a list item. Libraries use `-2^63` to mark an absent `int` or `int_delta` value.
 
 A reader skips a column of a type it doesn't know (0, 7 to 255) by its length. A column's data ends exactly at its
 length: anything else is an error, as is a dictionary number past the dictionary's end or a string that isn't
@@ -79,14 +80,38 @@ dataset picks its own (4 ASCII capitals is the convention) and its readers check
 
 ### Writing
 
-`trave.py`'s writer always gives the same bytes for the same tables: each dictionary lists its strings in the order
-of their first use, and `gzip_bytes` compresses with `gzip -9`, no file name and no time. A dataset's own tables say
-what a file means: name and document its tables, columns and their types, and add columns rather than change one.
+Every library's writer gives the same bytes for the same tables: each dictionary lists its strings in the order of
+their first use. Python's `gzip_bytes` compresses with `gzip -9`, no file name and no time, so a gzipped file is
+reproducible too. A dataset's own tables say what a file means: name and document its tables, columns and their
+types, and add columns rather than change one.
 
-## The reference implementation
+## Libraries
 
-[`trave.py`](trave.py) is one file, Python 3.9 or newer, standard library only (reading zstd needs Python 3.14's
-`compression.zstd`). Copy it into the builder that uses it.
+Each reads and writes the format and passes every [test vector](#test-vectors). They are not on a package registry
+yet; depend on them from this repository.
+
+| Language | Directory | Depend on it |
+|---|---|---|
+| Python 3.9+ | [`python/`](python) | `pip install "trave @ git+https://github.com/edde746/trave#subdirectory=python"`, or copy `trave.py`: one module, standard library only |
+| Go 1.23+ | [`go/`](go) | `go get github.com/edde746/trave/go` |
+| Kotlin Multiplatform (JVM and Android, iOS, macOS, tvOS) | [`kotlin/`](kotlin) | a Gradle included build of `kotlin/`; see its README |
+| Dart 3.5+ (native, not web) | [`dart/`](dart) | a git dependency with `path: dart`; see its README |
+
+The Python library decodes a whole file at once and handles gzip and zstd itself. The others are for apps: they
+take the unpacked bytes (the app decompresses), check the file's layout, and decode a column only when asked, into
+primitive arrays:
+
+| | Python | Go | Kotlin | Dart |
+|---|---|---|---|---|
+| read | `trave.read(data, magic)` | `trave.Read(data, magic)` | `Trave.read(bytes, magic)` | `readTrave(bytes, magic: …)` |
+| `int`, `int_delta` | `int`, `None` | `[]int64`, `Absent` | `LongArray`, `Trave.ABSENT` | `Int64List`, `traveAbsent` |
+| `str`, `dict` | `str`, `None` | `[]string` and `present []bool` | `Array<String?>` | `List<String?>` |
+| `int_list` | `list[int]`, `None` | `[][]int64`, nil | `Array<LongArray?>` | `List<Int64List?>` |
+| `str_list` | `list[str]`, `None` | `[][]string`, nil | `Array<List<String>?>` | `List<List<String>?>` |
+| write | `trave.pack(magic, tables)` | `trave.Pack(magic, tables)` | `Trave.pack(magic, tables)` | `packTrave(magic, tables)` |
+| errors | `ValueError` | wrap `trave.ErrFormat` | `TraveException` | `FormatException` |
+
+### Python
 
 ```python
 import trave
@@ -105,8 +130,10 @@ rows, columns = tables["films"]   # 3, {"tmdb": [603, 604, 605], "title": [...],
 ```
 
 `read` returns `{table: (rows, {column: values})}`, tables and columns in the file's order, `None` for an absent
-value, without the columns of a type it doesn't know. `python3 trave.py FILE...` prints each file's magic, tables and
-columns with their sizes.
+value, without the columns of a type it doesn't know. `python3 -m trave FILE...` prints each file's magic, tables
+and columns with their sizes.
+
+The other libraries' READMEs have their examples.
 
 ## Test vectors
 
@@ -116,12 +143,15 @@ itself against. All use the magic `TEST`.
 - A vector with `tables` is a valid file: reading it gives those tables, in that order, with each column's `type`
   and `values` (`null` for absent). A column of an unknown type isn't listed: the reader skips it. When `canonical`
   is true, writing the tables gives the same bytes.
-- A vector with `error` is an invalid file: reading it is an error. `error` says why.
+- A vector with `error` is an invalid file: reading it, and decoding its columns, is an error. `error` says why.
 
 The `int64_bounds` vector has integers up to `2^63 - 1`: parse the JSON with 64-bit integers, not doubles.
 
 ```sh
-python3 -m unittest discover tests
+(cd python && python3 -m unittest discover tests)
+(cd go && go test ./...)
+(cd kotlin && ./gradlew allTests)
+(cd dart && dart test)
 ```
 
 ## Licence

@@ -1,14 +1,14 @@
 """Trave: tables of named, typed columns packed for an app to read with nothing but a gzip or zstd decoder.
 
 The reference writer and reader of the README's format, Python 3.9 or newer, standard library only (zstd input needs
-Python 3.14's compression.zstd). Copy this file into a builder; nothing else is needed.
+Python 3.14's compression.zstd). One module with no dependencies: install the `trave` package or copy this file.
 
   pack(magic, tables) -> bytes      tables: [(name, rows, [(column name, type, values)])], None for an absent value
   gzip_bytes(data) -> bytes         gzip -9 with no file name and no time: the same data gives the same bytes
   read(data, magic=None)            -> {table: (rows, {column: values})}, gzip, zstd or not compressed
 
 Usage:
-  python trave.py FILE...           print each file's magic, tables and columns with their sizes
+  python -m trave FILE...           print each file's magic, tables and columns with their sizes
 """
 import argparse
 import gzip
@@ -28,6 +28,8 @@ TYPE_NAMES = {INT: "int", INT_DELTA: "int_delta", STR: "str", DICT: "dict", INT_
 
 GZIP_MAGIC, ZSTD_MAGIC = b"\x1f\x8b", b"\x28\xb5\x2f\xfd"
 U64 = 1 << 64
+# An int or int_delta value, and an int_delta difference, is within ±MAX_INT; only a list item can be -2**63.
+MAX_INT = (1 << 63) - 1
 
 
 # --- writing ---------------------------------------------------------------------------------------------------------
@@ -64,11 +66,16 @@ def column(kind, values):
     for v in values:
         if v is None:
             out.append(0)
-        elif kind == INT:
-            varint(zigzag(v) + 1, out)
-        elif kind == INT_DELTA:
-            varint(zigzag(v - previous) + 1, out)
-            previous = v
+        elif kind in (INT, INT_DELTA):
+            if not -MAX_INT <= v <= MAX_INT:
+                raise ValueError(f"value {v} outside ±(2**63 - 1)")
+            if kind == INT:
+                varint(zigzag(v) + 1, out)
+            else:
+                if not -MAX_INT <= v - previous <= MAX_INT:
+                    raise ValueError(f"difference {v - previous} outside ±(2**63 - 1)")
+                varint(zigzag(v - previous) + 1, out)
+                previous = v
         elif kind == STR:
             b = v.encode("utf-8")
             varint(len(b) + 1, out)
@@ -183,6 +190,8 @@ def read_column(kind, nrows, r):
             values.append(unzigzag(tag - 1))
         elif kind == INT_DELTA:
             previous += unzigzag(tag - 1)
+            if not -MAX_INT <= previous <= MAX_INT:
+                raise ValueError(f"int_delta value {previous} outside ±(2**63 - 1)")
             values.append(previous)
         elif kind == STR:
             values.append(r.bytes(tag - 1).decode("utf-8"))

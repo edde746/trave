@@ -74,6 +74,8 @@
     {"name": "dict_index_out_of_range", "hex": "54455354 01 01 0174 01 01 016b 04 04 01 0161 02", "error": "dictionary string 1 of 1"},
     {"name": "invalid_utf8", "hex": "54455354 01 01 0174 01 01 0173 03 02 02 ff", "error": "a string that is not UTF-8"},
     {"name": "int64_min", "hex": "54455354 01 01 0174 01 01 0169 01 0a 808080808080808080 02", "error": "an int tag of 2^64 (the value -2^63)"},
+    {"name": "int_delta_past_max", "hex": "54455354 01 01 0174 02 01 0164 02 0b ffffffffffffffffff01 03", "error": "an int_delta value of 2^63 (2^63 - 1, then 1 more)"},
+    {"name": "int_delta_reaching_min", "hex": "54455354 01 01 0174 02 01 0164 02 0b 02 feffffffffffffffff01", "error": "an int_delta value of -2^63 (-1, then -(2^63 - 1))"},
     {"name": "varint_over_10_bytes", "hex": "54455354 01 01 0174 01 01 0169 01 0b 80808080808080808080 00", "error": "an 11-byte varint"},
     {"name": "duplicate_column", "hex": "54455354 01 01 0174 01 02 0169 01 01 01 0169 01 01 01", "error": "two columns named i"},
     {"name": "duplicate_table", "hex": "54455354 01 02 0174 00 00 0174 00 00", "error": "two tables named t"}
