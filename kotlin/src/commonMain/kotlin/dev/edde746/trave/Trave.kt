@@ -1,4 +1,4 @@
-package io.github.edde746.trave
+package dev.edde746.trave
 
 /**
  * Reads and writes Trave files: tables of named, typed columns.

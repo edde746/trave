@@ -1,4 +1,4 @@
-package io.github.edde746.trave
+package dev.edde746.trave
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray

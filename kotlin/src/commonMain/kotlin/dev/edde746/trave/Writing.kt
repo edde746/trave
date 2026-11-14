@@ -1,4 +1,4 @@
-package io.github.edde746.trave
+package dev.edde746.trave
 
 /** A table for [Trave.pack]: its [name], its number of [rows], and its [columns], each holding [rows] values. */
 public class TableData(

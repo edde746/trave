@@ -1,4 +1,4 @@
-package io.github.edde746.trave
+package dev.edde746.trave
 
 /** A Trave file's headers, as parsed by [Trave.read]: its [magic] and its [tables] in the file's order. */
 public class TraveFile internal constructor(

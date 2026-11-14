@@ -23,7 +23,7 @@ includeBuild("trave/kotlin")
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.edde746:trave:1.0.0")
+            implementation("dev.edde746:trave:1.0.0")
         }
     }
 }
@@ -34,7 +34,7 @@ Gradle builds the library from the included sources in place of the coordinates.
 
 ## API
 
-Package `io.github.edde746.trave`. Every format error and every writer refusal is a `TraveException`, an
+Package `dev.edde746.trave`. Every format error and every writer refusal is a `TraveException`, an
 `IllegalArgumentException`.
 
 ```kotlin
@@ -83,7 +83,7 @@ sealed class ColumnData(name: String) {
 ## Reading
 
 ```kotlin
-import io.github.edde746.trave.Trave
+import dev.edde746.trave.Trave
 
 val file = Trave.read(unpackedBytes, "DEMO")
 val films = file.table("films") ?: error("no films")
@@ -97,9 +97,9 @@ for (row in 0 until films.rows) {
 ## Packing
 
 ```kotlin
-import io.github.edde746.trave.ColumnData
-import io.github.edde746.trave.TableData
-import io.github.edde746.trave.Trave
+import dev.edde746.trave.ColumnData
+import dev.edde746.trave.TableData
+import dev.edde746.trave.Trave
 
 val bytes = Trave.pack("DEMO", listOf(
     TableData("films", 3, listOf(
