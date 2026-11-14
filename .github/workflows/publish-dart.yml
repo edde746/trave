@@ -1,0 +1,17 @@
+name: publish-dart
+
+# Publishes dart/ to pub.dev when a tag dart/v<version> is pushed; pub.dev checks that <version> is pubspec.yaml's
+# (its automated publishing is set to this repository and the tag pattern dart/v{{version}}).
+on:
+  push:
+    tags:
+      - "dart/v[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # pub.dev's OIDC token
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
+    with:
+      working-directory: dart
+      use-flutter: false
